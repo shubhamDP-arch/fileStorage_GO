@@ -5,17 +5,17 @@ import (
 	"testing"
 )
 
-func TestPathTrasformFunc(t *testing.T){
-	
+func TestPathTrasformFunc(t *testing.T) {
+
 }
-func TestStore(t *testing.T){
+func TestStore(t *testing.T) {
 	opts := StoreOpts{
-		PathTransformFunc: DefaultPathTransformFunc,
+		PathTransformFunc: CASPathTransformfunc,
 	}
 	s := NewStore(opts)
-	
+
 	data := bytes.NewReader([]byte("some jpg bytes"))
-	if err := s.writeStream("mySpecPicture", data); err!= nil{
+	if err := s.writeStream("mySpecPicture", data); err != nil {
 		t.Error(err)
 	}
 }
