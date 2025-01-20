@@ -17,7 +17,7 @@ func TestStore(t *testing.T) {
 	s := NewStore(opts)
 	key := "momsSpecial"
 	data := []byte("some jpg bytes")
-	if err := s.writeStream(key, bytes.NewReader(data)); err != nil{
+	if err := s.writeStream(key, bytes.NewReader(data)); err != nil {
 		t.Error(err)
 	}
 	r, err := s.Read(key)
@@ -29,19 +29,20 @@ func TestStore(t *testing.T) {
 	if string(b) != string(data) {
 		t.Errorf("want %s hava %s",data, b)
 	}
-	
+
 }
-func TestStoreDeleteKey(t *testing.T)  {
+
+func TestStoreDeleteKey(t *testing.T) {
 	opts := StoreOpts{
 		PathTransformFunc: CASPathTransformfunc,
 	}
 	s := NewStore(opts)
 	key := "momsSpecial"
 	data := []byte("some jpg bytes")
-	if err := s.writeStream(key, bytes.NewReader(data)); err != nil{
+	if err := s.writeStream(key, bytes.NewReader(data)); err != nil {
 		t.Error(err)
 	}
-	if err:= s.Delete(key); err != nil{
+	if err := s.Delete(key); err != nil {
 		t.Error(err)
 	}
 }
