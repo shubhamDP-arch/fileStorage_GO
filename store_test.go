@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"io/ioutil"
 	"testing"
 )
 
@@ -13,9 +15,19 @@ func TestStore(t *testing.T) {
 		PathTransformFunc: CASPathTransformfunc,
 	}
 	s := NewStore(opts)
-
-	data := bytes.NewReader([]byte("some jpg bytes"))
-	if err := s.writeStream("mySpecPicture", data); err != nil {
+	key := "momsSpecial"
+	data := []byte("some jpg bytes")
+	if err := s.writeStream(key, bytes.NewReader(data)); err != nil{
 		t.Error(err)
 	}
+	r, err := s.Read(key)
+	if err != nil{
+		t.Error(err)
+	}
+	b, _ := ioutil.ReadAll(r)
+	fmt.Println(string(b))
+	if string(b) != string(data) {
+		t.Errorf("want %s hava %s",data, b)
+	}
+	
 }
