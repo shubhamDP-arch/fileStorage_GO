@@ -6,11 +6,12 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"strings"
 )
-
+const defaultRootFolderName  = "goodgame"
 func CASPathTransformfunc(key string) PathKey {
 	hash := sha1.Sum([]byte(key))
 	hashStr := hex.EncodeToString(hash[:])
@@ -29,6 +30,14 @@ func CASPathTransformfunc(key string) PathKey {
 	}
 
 }
+func (p PathKey)FirstPathName()string  {
+	paths:= strings.Split(p.PathName, "/")[0]
+	if len(paths) == 0{
+		fmt.Errorf("%s the file path is too short", paths)
+		return ""
+	}
+	return paths
+}
 func (p PathKey) FullPath() string {
 	return fmt.Sprintf("%s/%s", p.PathName, p.FileName)
 }
@@ -42,15 +51,29 @@ type Store struct {
 	StoreOpts
 }
 
-var DefaultPathTransformFunc = func(key string) string {
-	return key
+var DefaultPathTransformFunc = func(key string) PathKey {
+	return PathKey{
+		PathName: key,
+		FileName: key,
+	}
 }
 
 type StoreOpts struct {
+	Root 	string
 	PathTransformFunc PathTransformFunc
 }
 
 func NewStore(opts StoreOpts) *Store {
+	if opts.PathTransformFunc == nil {
+		opts.PathTransformFunc = DefaultPathTransformFunc
+	}
+	if len(opts.Root) == 0 {
+		opts.Root = defaultRootFolderName
+		
+	}
+	if len(opts.Root) == 0{
+		opts.Root = defaultRootFolderName
+	}
 	return &Store{
 		StoreOpts: opts,
 	}
@@ -66,6 +89,23 @@ func (s *Store) Read(key string) (io.Reader, error) {
 
 	return buf, err
 }
+func (s *Store)Has(key string)bool  {
+	pathKey := s.PathTransformFunc(key)
+	_, err:= os.Stat(pathKey.FullPath())
+	return err == fs.ErrNotExist
+}
+func (s *Store)Delete(key string)error  {
+	pathKey := s.PathTransformFunc(key)
+	defer func ()  {
+		log.Printf("deleted [%s] from disk", pathKey.FileName)
+	}()
+	// err := os.RemoveAll(pathKey.FullPath())
+	// if err != nil {
+	// 	return err
+	// }
+	// return nil
+	return os.RemoveAll(pathKey.FirstPathName())
+}
 func (s *Store) readStream(key string) (io.ReadCloser, error) {
 	pathKey := s.PathTransformFunc(key)
 	f, err := os.Open(pathKey.FullPath())
@@ -76,7 +116,7 @@ func (s *Store) readStream(key string) (io.ReadCloser, error) {
 }
 func (s *Store) writeStream(key string, r io.Reader) error {
 	pathkey := s.PathTransformFunc(key)
-	if err := os.MkdirAll(pathkey.PathName, os.ModePerm); err != nil {
+	if err := os.MkdirAll(s.Root+"/"+pathkey.PathName, os.ModePerm); err != nil {
 		return err
 	}
 	FullPath := pathkey.FullPath()

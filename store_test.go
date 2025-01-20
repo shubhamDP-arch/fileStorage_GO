@@ -31,3 +31,17 @@ func TestStore(t *testing.T) {
 	}
 	
 }
+func TestStoreDeleteKey(t *testing.T)  {
+	opts := StoreOpts{
+		PathTransformFunc: CASPathTransformfunc,
+	}
+	s := NewStore(opts)
+	key := "momsSpecial"
+	data := []byte("some jpg bytes")
+	if err := s.writeStream(key, bytes.NewReader(data)); err != nil{
+		t.Error(err)
+	}
+	if err:= s.Delete(key); err != nil{
+		t.Error(err)
+	}
+}
