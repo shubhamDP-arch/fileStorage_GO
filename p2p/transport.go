@@ -11,5 +11,6 @@ type Peer interface{
 type Trasport interface{
 	ListenAndAccept() error
 	Consume()<-chan RPC
-
+	Close() error
+	Dial(string)error
 }

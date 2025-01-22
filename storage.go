@@ -13,6 +13,12 @@ import (
 )
 
 const defaultRootFolderName = "goodgame"
+func (s *Store)Clear() error {
+	return os.RemoveAll(s.Root)
+}
+func(s *Store)Write(key string, r io.Reader)error{
+	return s.writeStream(key, r)
+}
 
 func CASPathTransformfunc(key string) PathKey {
 	hash := sha1.Sum([]byte(key))
@@ -96,7 +102,7 @@ func (s *Store) Has(key string) bool {
 	fullPathWithRoot := fmt.Sprintf("%s/%s", s.Root, pathKey.FullPath())
 	_, err := os.Stat(fullPathWithRoot)
 
-	return err == fs.ErrNotExist
+	return err != fs.ErrNotExist
 }
 func (s *Store) Delete(key string) error {
 	pathKey := s.PathTransformFunc(key)
